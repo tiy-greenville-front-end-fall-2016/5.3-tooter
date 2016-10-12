@@ -1,5 +1,6 @@
 var chai = require('chai');
 var expect = chai.expect;
+var $ = require('jquery');
 
 var PostView = require('../app/scripts/views').PostView;
 var Post = require('../app/scripts/models').Post;
@@ -16,7 +17,6 @@ describe('Post', function(){
 
     it('should resolve with an array of posts', function(done){
       Post.fetch().then(function(posts){
-        console.log(posts);
         var firstPost = posts[0];
         expect(firstPost).to.have.property('title');
         expect(firstPost).to.have.property('body');
@@ -24,6 +24,37 @@ describe('Post', function(){
 
         done();
       });
+    });
+
+    it("should trigger a posts:fetched event", function(done){
+
+      $(document).on('posts:fetched', function(event, posts){
+        expect(posts).to.be.an.instanceof(Array);
+        done();
+      });
+
+      Post.fetch();
+    });
+  });
+});
+
+// ##############################
+// View Tests
+// ##############################
+describe("PostView", function(){
+  var view, posts;
+
+  beforeEach(function(){
+    posts = [{title: "Title", body: "Body"}];
+    view = new PostView();
+  });
+
+  describe("showPosts", function(){
+    it("should take a post array and list them", function(){
+      view.showPosts(posts);
+      expect($('.posts li').length).to.equal(1);
+      expect($('.posts li h1').text()).to.equal("Title");
+      expect($('.posts li p').text()).to.equal("Body");
     });
   });
 });
